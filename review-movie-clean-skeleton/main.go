@@ -3,11 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"review_movie/genre"
-	"review_movie/movie"
-	"review_movie/moviegenre"
-	"review_movie/review"
-	"review_movie/user"
+	"review_movie/model"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
@@ -31,5 +27,5 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	db.AutoMigrate(&user.User{}, &genre.Genre{}, &movie.Movie{}, &review.Review{}, &moviegenre.MovieGenre{})
+	db.AutoMigrate(&model.User{}, &model.Genre{}, &model.Movie{}, &model.Review{}, &model.MovieGenre{})
 }

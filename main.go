@@ -1,31 +1,83 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
-	"review_movie/model"
+	"os"
 
-	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
+	"review_movie/database"
+	"review_movie/model"
+	"review_movie/seed"
+
+	//"github.com/joho/godotenv"
+	"github.com/spf13/viper"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func main() {
-	var myEnv map[string]string
-	myEnv, err := godotenv.Read()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+var (
+	postgreConfig *database.PostgreConfig
+	db            *gorm.DB
+)
+
+func initEnv(path string, name string) error {
+	/*
+		load env file and other environment variable
+	*/
+	viper.AddConfigPath(path)
+	viper.SetConfigName("local")
+	// Somehow it's error
+	// viper.SetConfigFile("env")
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		return err
 	}
+	if err := viper.Unmarshal(&postgreConfig); err != nil {
+		return err
+	}
+	return nil
+}
 
-	dbPassword := myEnv["DB_PASSWORD"]
-	dbHost := myEnv["DB_HOST"]
-	dbName := myEnv["DB_NAME"]
-	dsn := fmt.Sprintf("root:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbPassword, dbHost, dbName)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-
+func initDb() {
+	/*
+		db initialization
+	*/
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", postgreConfig.DBHost, postgreConfig.DBUser, postgreConfig.DBPassword, postgreConfig.DBName, postgreConfig.DBPort)
+	var err error
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	dbSql, _ := db.DB()
+	if pingErr := dbSql.Ping(); pingErr != nil {
+		fmt.Println(pingErr)
+	} else {
+		fmt.Println("Connected")
+		db.AutoMigrate(&model.User{}, &model.Movie{}, &model.Genre{}, &model.Review{}, &model.MovieGenre{})
+	}
+}
 
-	db.AutoMigrate(&model.User{}, &model.Genre{}, &model.Movie{}, &model.Review{}, &model.MovieGenre{})
+func main() {
+	if err := initEnv(".", "local"); err != nil {
+		log.Fatal(err)
+	}
+	initDb()
+	handleArgs()
+}
+
+func handleArgs() {
+	/*
+		Handle argument to seed
+	*/
+	flag.Parse()
+	args := flag.Args()
+
+	if len(args) >= 1 {
+		switch args[0] {
+		case "seed":
+			seed.Execute(db, args[1:]...)
+			os.Exit(0)
+		}
+	}
 }

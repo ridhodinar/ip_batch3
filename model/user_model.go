@@ -1,13 +1,9 @@
 package model
 
-import (
-	"gorm.io/gorm"
-)
-
 type User struct {
-	gorm.Model
-	FullName string
-	Email    string
-	Password string
-	Role     string
+	BaseModel
+	FullName string `faker:"name"`
+	Email    string `faker:"email"`
+	Password string `faker:"-"`
+	Role     string `faker:"oneof: admin, guest"`
 }

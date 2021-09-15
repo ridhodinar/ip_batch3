@@ -1,13 +1,9 @@
 package model
 
-import (
-	"gorm.io/gorm"
-)
-
 type MovieGenre struct {
-	gorm.Model
-	Movie   string
-	Genre   string
-	MovieID int
-	GenreID int
+	BaseModel
+	Movie   string `faker:"-"`
+	Genre   string `faker:"-"`
+	MovieID uint   `faker:"boundary_start=1, boundary_end=200"`
+	GenreID uint   `faker:"boundary_start=1, boundary_end=5"`
 }

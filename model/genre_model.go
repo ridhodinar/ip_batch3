@@ -1,10 +1,6 @@
 package model
 
-import (
-	"gorm.io/gorm"
-)
-
 type Genre struct {
-	gorm.Model
-	Name string
+	BaseModel
+	Name string `faker:"word,unique"`
 }

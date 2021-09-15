@@ -1,12 +1,8 @@
 package model
 
-import (
-	"gorm.io/gorm"
-)
-
 type Movie struct {
-	gorm.Model
-	Ratings int
-	Title   string
-	Year    int
+	BaseModel
+	Ratings uint   `faker:"boundary_start=0, boundary_end=10"`
+	Title   string `faker:"sentence"`
+	Year    uint   `faker:"boundary_start=1900, boundary_end=2021"`
 }
